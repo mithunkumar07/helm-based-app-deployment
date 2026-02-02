@@ -3,7 +3,7 @@ namespace: default
 replicaCount: 1
 
 app:
-  name: nginx
+  name: app
   healthCheckPath: /
 
 
@@ -13,13 +13,13 @@ service:
   targetPort: 80
 
 image:
-  repository: nginx
+  repository: app
   tag: latest
   pullPolicy: Always
   pullSecret: docker-creds
 
 configmap:
-  name: nginx-configmap
+  name: app-configmap
 
 resources:
   requests:

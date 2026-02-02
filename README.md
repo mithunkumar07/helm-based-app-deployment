@@ -1,10 +1,10 @@
-# Nginx Helm Chart
+# Application Helm Chart
 
-A Helm chart for deploying Nginx with production-ready configurations including health checks, resource limits, and rolling updates.
+A Helm chart for deploying containerized applications with production-ready configurations including health checks, resource limits, and rolling updates.
 
 ## Overview
 
-This Helm chart deploys Nginx as a scalable web server with the following features:
+This Helm chart deploys any containerized application as a scalable service with the following features:
 - Configurable replica count
 - Health probes (startup, readiness, liveness)
 - Resource requests and limits
@@ -22,17 +22,17 @@ This Helm chart deploys Nginx as a scalable web server with the following featur
 
 ### Install with default values:
 ```bash
-helm install nginx-release .
+helm install app-release .
 ```
 
 ### Install with custom values:
 ```bash
-helm install nginx-release . -f my-values.yaml
+helm install app-release . -f my-values.yaml
 ```
 
 ### Install into specific namespace:
 ```bash
-helm install nginx-release . --namespace <namespace> --create-namespace
+helm install app-release . --namespace <namespace> --create-namespace
 ```
 
 ## Configuration
@@ -43,16 +43,16 @@ helm install nginx-release . --namespace <namespace> --create-namespace
 |-----------|-------------|---------|
 | `namespace` | Target namespace | `default` |
 | `replicaCount` | Number of replicas | `1` |
-| `app.name` | Application name | `nginx` |
+| `app.name` | Application name | `app` |
 | `app.healthCheckPath` | Health check path | `/` |
 | `service.type` | Service type | `ClusterIP` |
 | `service.port` | Service port | `80` |
 | `service.targetPort` | Container port | `80` |
-| `image.repository` | Docker image | `nginx` |
+| `image.repository` | Docker image | `app` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `Always` |
 | `image.pullSecret` | Docker registry secret | `docker-creds` |
-| `configmap.name` | ConfigMap name | `nginx-configmap` |
+| `configmap.name` | ConfigMap name | `app-configmap` |
 | `resources.requests.cpu` | CPU request | `500m` |
 | `resources.requests.memory` | Memory request | `1024Mi` |
 | `resources.limits.cpu` | CPU limit | `1000m` |
@@ -88,12 +88,12 @@ The chart includes three types of health probes:
 
 ### Scale to 3 replicas:
 ```bash
-helm upgrade nginx-release . --set replicaCount=3
+helm upgrade app-release . --set replicaCount=3
 ```
 
-### Use specific Nginx version:
+### Use specific application version:
 ```bash
-helm upgrade nginx-release . --set image.tag=1.27
+helm upgrade app-release . --set image.tag=v1.0.0
 ```
 
 ### Change service type to NodePort:
@@ -105,14 +105,14 @@ helm upgrade nginx-release . --set service.type=NodePort
 
 To upgrade the deployment:
 ```bash
-helm upgrade nginx-release .
+helm upgrade app-release .
 ```
 
 ## Uninstalling
 
 To remove the deployment:
 ```bash
-helm uninstall nginx-release
+helm uninstall app-release
 ```
 
 ## Monitoring

@@ -1,0 +1,53 @@
+namespace: default
+
+replicaCount: 1
+
+app:
+  name: nginx
+  healthCheckPath: /
+
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+image:
+  repository: nginx
+  tag: latest
+  pullPolicy: Always
+  pullSecret: docker-creds
+
+configmap:
+  name: nginx-configmap
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1024Mi"
+  limits:
+    cpu: "1000m"
+    memory: "2048Mi"
+
+strategy:
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+probes:
+  startup:
+    failureThreshold: 60
+    periodSeconds: 5
+    timeoutSeconds: 3
+
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3

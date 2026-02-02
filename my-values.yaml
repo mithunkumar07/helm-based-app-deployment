@@ -1,0 +1,38 @@
+namespace: default
+
+replicaCount: 3
+
+app:
+  name: nginx
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+  
+image:
+  repository: nginx
+  tag: 1.27
+  pullPolicy: Always
+  pullSecret: docker-creds
+
+configmap:
+  name: nginx-configmap
+
+probes:
+  startup:
+    failureThreshold: 60
+    periodSeconds: 5
+    timeoutSeconds: 3
+
+  readiness:
+    initialDelaySeconds: 5
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 3
+
+  liveness:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3

@@ -1,0 +1,645 @@
+{
+    "name": "Helm deployment | Mithun",
+    "nodes": [
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\n\nexport PROJECT_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\nexport APP_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}/{{ $('Helm deployment').item.json['app-name'] }}\n\nmkdir -p $PROJECT_PATH\nmkdir -p $APP_PATH\n\ncat <<EOF > $APP_PATH/custom-values.yaml\nnamespace: {{ $('Helm deployment').item.json['namespace'] }}\nreplicaCount: {{ $('Helm deployment').item.json['replica-count'] }}\n\nimage:\n  repository: {{ $('Helm deployment').item.json['image-repository'] }}\n  tag: {{ $('Helm deployment').item.json['image-tag'] }}\n  pullSecret: {{ $('Helm deployment').item.json['image-pull-secret'] }}\n\nservice:\n  type: {{ $('Helm deployment').item.json['service-type'] }}\n  port: {{ $('Helm deployment').item.json['service-port'] }}\n  targetPort: {{ $('Helm deployment').item.json['target-port'] }}\n\nconfigmap:\n  name: {{ $('Helm deployment').item.json['configmap-name'] }}\n\nresources:\n  requests:\n    cpu: {{ $('Helm deployment').item.json['cpu-request'] }}\n    memory: {{ $('Helm deployment').item.json['memory-request'] }}\n  limits:\n    cpu: {{ $('Helm deployment').item.json['cpu-limit'] }}\n    memory: {{ $('Helm deployment').item.json['memory-limit'] }}\n\nprobes:\n  healthPath: {{ $('Helm deployment').item.json['health-path'] }}\n  startup:\n    failureThreshold: {{ $('Helm deployment').item.json['startup-probe-failure-threshold'] }}\n    periodSeconds: {{ $('Helm deployment').item.json['startup-probe-period-seconds'] }}\n    timeoutSeconds: {{ $('Helm deployment').item.json['startup-probe-timeout-seconds'] }}\n  readiness:\n    initialDelaySeconds: {{ $('Helm deployment').item.json['readiness-probe-initial-delay-seconds'] }}\n    periodSeconds: {{ $('Helm deployment').item.json['readiness-probe-period-seconds'] }}\n    timeoutSeconds: {{ $('Helm deployment').item.json['readiness-probe-timeout-seconds'] }}\n    failureThreshold: {{ $('Helm deployment').item.json['readiness-probe-failure-threshold'] }}\n  liveness:\n    initialDelaySeconds: {{ $('Helm deployment').item.json['liveness-probe-initial-delay-seconds'] }}\n    periodSeconds: {{ $('Helm deployment').item.json['liveness-probe-period-seconds'] }}\n    timeoutSeconds: {{ $('Helm deployment').item.json['liveness-probe-timeout-seconds'] }}\n    failureThreshold: {{ $('Helm deployment').item.json['liveness-probe-failure-threshold'] }}\nEOF\n\necho \"✅ custom-values.yaml generated successfully!\"\n"
+        },
+        "id": "41f0c80a-54e2-4604-8fe1-b78fbf2a6fc9",
+        "name": "Generate custom-values.yaml",
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          -944,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\n\nexport PROJECT_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\nexport APP_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}/{{ $('Helm deployment').item.json['app-name'] }}\n\nmkdir -p $PROJECT_PATH\nmkdir -p $APP_PATH\n\ncat <<EOF > $APP_PATH/Chart.yaml\napiVersion: v2\nname: {{ $('Helm deployment').item.json['app-name'] }}\ndescription: Helm chart for {{ $('Helm deployment').item.json['app-name'] }} Deployment\nversion: {{ $('Helm deployment').item.json['chart-version'] }}\nappVersion: \"{{ $('Helm deployment').item.json['app-version'] }}\"\nEOF\n\necho \"✅ Chart.yaml generated successfully!\"\n"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          -752,
+          0
+        ],
+        "id": "2392f7ff-8d31-4463-9da6-0fc8c8fe4371",
+        "name": "Generate Chart.yaml"
+      },
+      {
+        "parameters": {
+          "formTitle": "Helm Deployment Config",
+          "formDescription": "Fill in all the details required to deploy your Helm application.",
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "namespace",
+                "placeholder": "Enter the Kubernetes namespace (e.g. default or prod)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "replica-count",
+                "placeholder": "Enter how many replicas you want (e.g. 1, 2, 3)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "app-name",
+                "placeholder": "Enter the application name (e.g. taout-be)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "app-version",
+                "placeholder": "Enter your app's version",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "chart-version",
+                "placeholder": "Enter the helm Chart version"
+              },
+              {
+                "fieldLabel": "service-type",
+                "fieldType": "dropdown",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "ClusterIP"
+                    },
+                    {
+                      "option": "LoadBalancer"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "service-port",
+                "placeholder": "Enter the port clients use (e.g. 80)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "target-port",
+                "placeholder": "Enter the port your app listens on inside the container (e.g. 7000)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "image-repository",
+                "placeholder": "Enter the image name or repository (e.g. busybox or myrepo/backend)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "image-tag",
+                "placeholder": "Enter the image tag (e.g. latest, v1.0.0)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "image-pull-secret",
+                "placeholder": "Enter the Docker registry secret name (e.g. docker-creds)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "configmap-name",
+                "placeholder": "Enter the name of the ConfigMap used (e.g. backend-configmap)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "cpu-request",
+                "placeholder": "Enter CPU request value (e.g. 500m or 1000m)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "memory-request",
+                "placeholder": "Enter memory request value (e.g. 512Mi or 1024Mi)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "cpu-limit",
+                "placeholder": "Enter CPU limit value (e.g. 1000m)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "memory-limit",
+                "placeholder": "Enter memory limit value (e.g. 2048Mi)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "health-path",
+                "placeholder": "Enter the health check endpoint path (e.g. /v1/health)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "startup-probe-failure-threshold",
+                "placeholder": "Max failures before marking container as unhealthy (e.g., 60)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "startup-probe-period-seconds",
+                "placeholder": "How often (seconds) the startup probe runs (e.g., 5)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "startup-probe-timeout-seconds",
+                "placeholder": "How long (seconds) the probe waits before timing out (e.g., 3)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "readiness-probe-initial-delay-seconds",
+                "placeholder": "Delay (seconds) before starting readiness checks (e.g., 5)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "readiness-probe-period-seconds",
+                "placeholder": "How often (seconds) to perform readiness checks (e.g., 5)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "readiness-probe-timeout-seconds",
+                "placeholder": "How long (seconds) to wait for the readiness probe (e.g., 3)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "readiness-probe-failure-threshold",
+                "placeholder": "Max failures before marking container unready (e.g., 3)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "liveness-probe-initial-delay-seconds",
+                "placeholder": "Delay (seconds) before starting liveness checks (e.g., 30)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "liveness-probe-period-seconds",
+                "placeholder": "How often (seconds) to perform liveness checks (e.g., 10)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "liveness-probe-timeout-seconds",
+                "placeholder": "How long (seconds) to wait for the liveness probe (e.g., 5)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "liveness-probe-failure-threshold",
+                "placeholder": "Max failures before restarting the container (e.g., 3)",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "cloud-name",
+                "fieldType": "dropdown",
+                "fieldOptions": {
+                  "values": [
+                    {
+                      "option": "AWS"
+                    },
+                    {
+                      "option": "DO"
+                    }
+                  ]
+                },
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "management-ip",
+                "placeholder": "Enter your management node Public IP",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "management-pvt-key",
+                "fieldType": "textarea",
+                "placeholder": "Management node private key",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "project-name",
+                "placeholder": "Enter your project name",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.formTrigger",
+        "typeVersion": 2.3,
+        "position": [
+          -1136,
+          0
+        ],
+        "id": "5272c99b-9c97-4c74-b0d9-f8d8cc310d61",
+        "name": "Helm deployment",
+        "webhookId": "5cdeada7-1bd5-4b47-a34e-b7fb35bca110"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $('Helm deployment').item.json['cloud-name']}}",
+                      "rightValue": "AWS",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "7c090dbc-ae3f-4a1c-a3bb-1ab52598757c"
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "AWS ECR"
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "73d0ef6f-b7a5-4fb9-984e-abcc8da68e93",
+                      "leftValue": "={{ $('Helm deployment').item.json['cloud-name']}}",
+                      "rightValue": "DO",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                },
+                "renameOutput": true,
+                "outputKey": "DO Container registry"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          1424,
+          0
+        ],
+        "id": "9a5dfb3b-818b-44c8-85cf-10e9ed0a09b1",
+        "name": "Container registry cloud"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.form",
+        "typeVersion": 2.3,
+        "position": [
+          1856,
+          208
+        ],
+        "id": "4b4fdb68-5582-473c-968c-2ed5eb16ae6d",
+        "name": "DO Creds container registry",
+        "webhookId": "666418d6-1a63-4a67-b7ad-547c8ba2596d"
+      },
+      {
+        "parameters": {
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "registry-url",
+                "placeholder": "Enter your ECR registry URL",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "region",
+                "placeholder": "Enter the AWS ECR region",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "access-key",
+                "placeholder": "Enter your Access key",
+                "requiredField": true
+              },
+              {
+                "fieldLabel": "secret-key",
+                "placeholder": "Enter your secret access key",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.form",
+        "typeVersion": 2.3,
+        "position": [
+          1856,
+          -304
+        ],
+        "id": "c773f4de-dcdb-49f4-aa89-26597d5a26b9",
+        "name": "AWS Creds container registry",
+        "webhookId": "666418d6-1a63-4a67-b7ad-547c8ba2596d"
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\n\nexport PROJECT_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\n\nmkdir -p $PROJECT_PATH\n\ncat <<'EOF' > \"$PROJECT_PATH/management-node-pvt-key\"\n{{ $('Helm deployment').item.json['management-pvt-key'] }}\nEOF\n\nchmod 400 $PROJECT_PATH/management-node-pvt-key"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          -560,
+          0
+        ],
+        "id": "e2aa4be6-96e8-4729-9c6b-cc158767669d",
+        "name": "Create mngt node key file"
+      },
+      {
+        "parameters": {
+          "formFields": {
+            "values": [
+              {
+                "fieldLabel": "envValues",
+                "fieldType": "textarea",
+                "placeholder": "Put your .env file content",
+                "requiredField": true
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.form",
+        "typeVersion": 2.3,
+        "position": [
+          -368,
+          0
+        ],
+        "id": "40a02573-96eb-47bc-b5a7-52bfd0c16590",
+        "name": ".env required for the app",
+        "webhookId": "2cc75ae4-e7d1-4f0b-b321-823f94782f3e"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Input from n8n form node\n// Suppose your form node has a field called \"envValues\" which is a textarea\n// Each line is like: KEY=value\nconst envText = $json[\"envValues\"]; // textarea input as string\n\n// Split lines and process\nconst lines = envText.split(\"\\n\").filter(line => line.trim() !== \"\");\n\n// Generate Helm ConfigMap template dynamically\nlet configMapTemplate = `\napiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: {{ .Values.configmap.name }}\n  namespace: {{ .Values.namespace }}\ndata:\n`;\n\nlines.forEach(line => {\n  // Ignore commented lines\n  if (line.trim().startsWith(\"#\")) return;\n\n  // Split only on first '=' to handle URLs or values containing '='\n  const [key, ...rest] = line.split(\"=\");\n  const value = rest.join(\"=\");\n  \n  const k = key.trim();\n  let v = value.trim();\n\n  // Skip empty lines\n  if (!k) return;\n\n  // Detect if value is already quoted (supports single or double)\n  const isQuoted = (\n    (v.startsWith('\"') && v.endsWith('\"')) ||\n    (v.startsWith(\"'\") && v.endsWith(\"'\"))\n  );\n\n  // Only wrap with quotes if not already quoted\n  if (!isQuoted) {\n    v = `\"${v}\"`;\n  }\n\n  // Add line to template\n  configMapTemplate += `  ${k}: ${v}\\n`;\n});\n\nconsole.log(configMapTemplate);\n\n// Return the template as output\nreturn [\n  {\n    json: {\n      helmConfigMap: configMapTemplate\n    }\n  }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -160,
+          0
+        ],
+        "id": "14e82c99-5658-44ed-a475-e36eaaf6666f",
+        "name": "Generate configmap values",
+        "executeOnce": true,
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// You can also pass dynamic values from a form if needed\n// For now we just generate Helm templates as strings\n\nconst deploymentYaml = `\napiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ .Values.app.name }}\n  namespace: {{ .Values.namespace }}\n  labels:\n    app: {{ .Values.app.name }}\nspec:\n  replicas: {{ .Values.replicaCount }}\n  selector:\n    matchLabels:\n      app: {{ .Values.app.name }}\n  strategy:\n    type: RollingUpdate\n    rollingUpdate:\n      maxUnavailable: {{ .Values.strategy.rollingUpdate.maxUnavailable }}\n      maxSurge: {{ .Values.strategy.rollingUpdate.maxSurge }}\n  template:\n    metadata:\n      labels:\n        app: {{ .Values.app.name }}\n    spec:\n      imagePullSecrets:\n      - name: {{ .Values.image.pullSecret }}\n      containers:\n      - name: {{ .Values.app.name }}\n        image: \"{{ .Values.image.repository }}:{{ .Values.image.tag }}\"\n        imagePullPolicy: {{ .Values.image.pullPolicy }}\n        envFrom:\n        - configMapRef:\n            name: {{ .Values.configmap.name }}\n        resources:\n          requests:\n            cpu: \"{{ .Values.resources.requests.cpu }}\"\n            memory: \"{{ .Values.resources.requests.memory }}\"\n          limits:\n            cpu: \"{{ .Values.resources.limits.cpu }}\"\n            memory: \"{{ .Values.resources.limits.memory }}\"\n\n        startupProbe:\n          httpGet:\n            path: {{ .Values.app.healthCheckPath }}\n            port: {{ .Values.service.targetPort }}\n          failureThreshold: {{ .Values.probes.startup.failureThreshold }}\n          periodSeconds: {{ .Values.probes.startup.periodSeconds }}\n          timeoutSeconds: {{ .Values.probes.startup.timeoutSeconds }}\n\n        readinessProbe:\n          httpGet:\n            path: {{ .Values.app.healthCheckPath }}\n            port: {{ .Values.service.targetPort }}\n          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}\n          periodSeconds: {{ .Values.probes.readiness.periodSeconds }}\n          timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}\n          failureThreshold: {{ .Values.probes.readiness.failureThreshold }}\n\n        livenessProbe:\n          httpGet:\n            path: {{ .Values.app.healthCheckPath }}\n            port: {{ .Values.service.targetPort }}\n          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}\n          periodSeconds: {{ .Values.probes.liveness.periodSeconds }}\n          timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}\n          failureThreshold: {{ .Values.probes.liveness.failureThreshold }}\n`;\n\nconst serviceYaml = `\napiVersion: v1\nkind: Service\nmetadata:\n  name: {{ .Values.app.name }}\n  namespace: {{ .Values.namespace }}\nspec:\n  selector:\n    app: {{ .Values.app.name }}\n  ports:\n    - protocol: TCP\n      port: {{ .Values.service.port }}\n      targetPort: {{ .Values.service.targetPort }}\n  type: {{ .Values.service.type }}\n`;\n\nconst valuesYaml = `\nnamespace: default\n\nreplicaCount: 1\n\napp:\n  name: nginx\n  healthCheckPath: /\n\n\nservice:\n  type: ClusterIP\n  port: 80\n  targetPort: 80\n\nimage:\n  repository: nginx\n  tag: latest\n  pullPolicy: Always\n  pullSecret: docker-creds\n\nconfigmap:\n  name: nginx-configmap\n\nresources:\n  requests:\n    cpu: \"500m\"\n    memory: \"1024Mi\"\n  limits:\n    cpu: \"1000m\"\n    memory: \"2048Mi\"\n\nstrategy:\n  rollingUpdate:\n    maxUnavailable: 0\n    maxSurge: 1\n\nprobes:\n  startup:\n    failureThreshold: 60\n    periodSeconds: 5\n    timeoutSeconds: 3\n\n  readiness:\n    initialDelaySeconds: 5\n    periodSeconds: 5\n    timeoutSeconds: 3\n    failureThreshold: 3\n\n  liveness:\n    initialDelaySeconds: 30\n    periodSeconds: 10\n    timeoutSeconds: 5\n    failureThreshold: 3\n`;\n\n// Return both YAMLs\nreturn [\n  {\n    json: {\n      deploymentYaml,\n      serviceYaml,\n      valuesYaml\n    }\n  }\n];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          256,
+          0
+        ],
+        "id": "9c76229e-ce7f-4e15-a793-77e0d156a578",
+        "name": "Generate the manifest templates",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\n\nexport PROJECT_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\n\nexport APP_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}/{{ $('Helm deployment').item.json['app-name'] }}\n\nmkdir -p $PROJECT_PATH\nmkdir -p $APP_PATH/templates\n\ncat <<EOF > $APP_PATH/templates/deployment.yaml\n{{$json[\"deploymentYaml\"]}}\nEOF\n\ncat <<EOF > $APP_PATH/templates/service.yaml\n{{$json[\"serviceYaml\"]}}\nEOF\n\ncat <<EOF > $APP_PATH/values.yaml\n{{$json[\"valuesYaml\"]}}\nEOF"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          464,
+          0
+        ],
+        "id": "81fc729f-5004-4213-8c6c-162d8a37bcc7",
+        "name": "create manifest template files"
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\n\nexport PROJECT_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\n\nexport APP_PATH=/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}/{{ $('Helm deployment').item.json['app-name'] }}\n\nmkdir -p $PROJECT_PATH\nmkdir -p $APP_PATH/templates\n\ncat <<EOF > $APP_PATH/templates/configmap.yaml\n{{$json[\"helmConfigMap\"]}}\nEOF\n"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          16,
+          0
+        ],
+        "id": "9a50b3a4-277b-4f6e-9e28-9551ec19440e",
+        "name": "create configmap template file"
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\n\nexport PROJECT_PATH=\"/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\"\nexport APP_PATH=\"/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}/{{ $('Helm deployment').item.json['app-name'] }}\"\n\n# Navigate to the project directory\ncd \"$PROJECT_PATH\"\n\n# Zip the app folder and its contents\nzip -r \"{{ $('Helm deployment').item.json['app-name'] }}.zip\" \"{{ $('Helm deployment').item.json['app-name'] }}\"\n"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          784,
+          0
+        ],
+        "id": "071430de-20a4-48cb-83f8-b2c194e6df0b",
+        "name": "zip the app's helm template",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\n\nset -e\nexport PROJECT_PATH=\"/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\"\nexport PEM_KEY=\"$PROJECT_PATH/management-node-pvt-key\"\n\nssh -i \"$PEM_KEY\" -o StrictHostKeyChecking=no ubuntu@{{ $('Helm deployment').item.json['management-ip'] }} -p 10022 << 'EOF'\necho \"Switching to management-user via root...\"\n\nsudo -i bash << 'ROOTCMD'\nset -e\n\necho \"Now as root: $(whoami)\"\n\n# Switch to management-user and execute commands inline\nsu -l management-user -s /bin/bash << 'MANAGEMENTCMD'\nset -e\necho \"Now as: $(whoami)\"\nexport PATH=$PATH:/usr/local/bin:/usr/bin:/snap/bin\nexport KUBECONFIG=/home/management-user/.kube/config\nexport AWS_ACCESS_KEY_ID={{ $('AWS Creds container registry').item.json['access-key']}}\nexport AWS_SECRET_ACCESS_KEY={{ $('AWS Creds container registry').item.json['secret-key']}}\n\n# Confirm AWS CLI + kubectl exist\nwhich aws || echo \"aws not found\"\nwhich kubectl || echo \"kubectl not found\"\n\n# Step 1: Get ECR login password\necr_password=$(aws ecr get-login-password --region {{ $('AWS Creds container registry').item.json['region'] }})\n\n# Step 2: Define namespace and registry\nNAMESPACE={{ $('Helm deployment').item.json['namespace'] }}\nREGISTRY_URL={{ $('AWS Creds container registry').item.json['registry-url'] }}\nSECRET_NAME={{ $('Helm deployment').item.json['image-pull-secret'] }}\n\necho \"Creating namespace and docker secret for: $NAMESPACE\"\nkubectl create namespace $NAMESPACE --dry-run=client -o yaml | kubectl apply -f -\n\nkubectl delete secret $SECRET_NAME -n $NAMESPACE --ignore-not-found=true\nkubectl create secret docker-registry $SECRET_NAME \\\n  --namespace $NAMESPACE \\\n  --docker-server=$REGISTRY_URL \\\n  --docker-username=AWS \\\n  --docker-password=$ecr_password\n\necho \"✅ Secret $SECRET_NAME created successfully in namespace $NAMESPACE\"\n\nMANAGEMENTCMD\nROOTCMD\nEOF\n"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          2240,
+          -304
+        ],
+        "id": "bd0cb1b5-0ed3-4599-adcf-75270398aaa8",
+        "name": "create docker pull secret"
+      },
+      {
+        "parameters": {
+          "command": "=#!/bin/bash\nset -e\n\n# Step 1: Define variables dynamically from n8n input\nexport PROJECT_PATH=\"/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\"\nexport APP_NAME=\"{{ $('Helm deployment').item.json['app-name'] }}\"\nexport MANAGEMENT_IP=\"{{ $('Helm deployment').item.json['management-ip'] }}\"\nexport PEM_KEY=\"$PROJECT_PATH/management-node-pvt-key\"\nZIP_FILE=\"$PROJECT_PATH/$APP_NAME.zip\"\n\ncd \"$PROJECT_PATH\"\n\necho \"Transferring zip file to management node...\"\nscp -i \"$PEM_KEY\" -P 10022 -o StrictHostKeyChecking=no \"$ZIP_FILE\" ubuntu@\"$MANAGEMENT_IP\":/home/ubuntu/\n\necho \"Connecting to management node...\"\nssh -i \"$PEM_KEY\" -o StrictHostKeyChecking=no ubuntu@\"$MANAGEMENT_IP\" -p 10022 << 'EOF'\nset -e\necho \"Switching to root...\"\n\nsudo -i bash << 'ROOTCMD'\nset -e\necho \"Now as root: $(whoami)\"\n\n# Move the ZIP file into management-user’s directory\nmkdir -p /home/management-user/helm-deployments\nmv /home/ubuntu/{{ $('Helm deployment').item.json['app-name'] }}.zip /home/management-user/helm-deployments/\nchown -R management-user:management-user /home/management-user/helm-deployments\n\necho \"Switching to management-user...\"\nsu -l management-user -s /bin/bash << 'MANAGEMENTCMD'\nset -e\necho \"Now as: $(whoami)\"\n\n# Step 1: Define variables dynamically from n8n input\nexport PROJECT_PATH=\"/root/projects-helm-deployment/{{ $('Helm deployment').item.json['project-name'] }}\"\nexport APP_NAME=\"{{ $('Helm deployment').item.json['app-name'] }}\"\nexport PATH=$PATH:/usr/local/bin:/usr/bin:/snap/bin\nexport KUBECONFIG=/home/management-user/.kube/config\n\ncd /home/management-user/helm-deployments/\nls -la\nunzip -o {{ $('Helm deployment').item.json['app-name'] }}.zip\ncd {{ $('Helm deployment').item.json['app-name'] }}\n\necho \"Running Helm install...\"\nls -la\n\nhelm install $APP_NAME . --values custom-values.yaml\n\necho \"✅ Helm deployment completed successfully\"\nMANAGEMENTCMD\nROOTCMD\nEOF\n\necho \"Helm deployment completed successfully ✅\"\n"
+        },
+        "type": "n8n-nodes-base.executeCommand",
+        "typeVersion": 1,
+        "position": [
+          2640,
+          -304
+        ],
+        "id": "79ade5d6-99ba-4651-80b0-bbb5cce4641a",
+        "name": "Helm deployment of app"
+      }
+    ],
+    "pinData": {},
+    "connections": {
+      "Generate custom-values.yaml": {
+        "main": [
+          [
+            {
+              "node": "Generate Chart.yaml",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Helm deployment": {
+        "main": [
+          [
+            {
+              "node": "Generate custom-values.yaml",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Chart.yaml": {
+        "main": [
+          [
+            {
+              "node": "Create mngt node key file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AWS Creds container registry": {
+        "main": [
+          [
+            {
+              "node": "create docker pull secret",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Container registry cloud": {
+        "main": [
+          [
+            {
+              "node": "AWS Creds container registry",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "DO Creds container registry",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create mngt node key file": {
+        "main": [
+          [
+            {
+              "node": ".env required for the app",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      ".env required for the app": {
+        "main": [
+          [
+            {
+              "node": "Generate configmap values",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate configmap values": {
+        "main": [
+          [
+            {
+              "node": "create configmap template file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate the manifest templates": {
+        "main": [
+          [
+            {
+              "node": "create manifest template files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "create configmap template file": {
+        "main": [
+          [
+            {
+              "node": "Generate the manifest templates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "create manifest template files": {
+        "main": [
+          [
+            {
+              "node": "zip the app's helm template",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "zip the app's helm template": {
+        "main": [
+          [
+            {
+              "node": "Container registry cloud",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "create docker pull secret": {
+        "main": [
+          [
+            {
+              "node": "Helm deployment of app",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "versionId": "1e46ce85-aa99-45d5-989d-cad58e629013",
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "e078bf8663eec6b980ebb37dfdf253b97fdb82573f2a7d2ad4a861b728241cad"
+    },
+    "id": "Isk2NvDMpnJGvWIJ",
+    "tags": []
+  }
